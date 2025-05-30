@@ -59,7 +59,7 @@ export default function LoginPage() {
     }, [errorFromRedirect]);
 
     return (
-        <div className={`min-h-screen bg-[url('/background.jpg')] bg-cover bg-center relative transition-colors duration-500 ease-in-out ${darkMode ? "dark bg-gray-900" : ""}`}>
+        <div className={`min-h-screen bg-[url('/bg.jpg')] bg-cover bg-center relative transition-colors duration-500 ease-in-out ${darkMode ? "dark bg-gray-900" : ""}`}>
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-colors duration-500 ease-in-out" />
             <div className="absolute top-4 right-4 z-20">
                 <button
