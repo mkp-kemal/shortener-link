@@ -1,30 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { loginUser } from "../api/authSlice";
+import { useTheme } from "../utils/theme";
 import InputField from "./common/InputField";
+import { useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
-    const [darkMode, setDarkMode] = useState(false);
+    const [darkMode, setDarkMode] = useTheme();
     const [formData, setFormData] = useState({ username: "", password: "" });
     const [loading, setLoading] = useState(false);
-    const [errorMsg, setErrorMsg] = useState("");
+    const [formErrors, setFormErrors] = useState({});
+    const [searchParams] = useSearchParams();
+    const errorFromRedirect = searchParams.get("error");
+    const formFields = [
+        { name: "username", label: "Username", required: true },
+        { name: "password", label: "Password", required: true },
+    ];
 
-    useEffect(() => {
-        const savedTheme = localStorage.getItem("theme");
-        if (savedTheme === "dark") {
-            setDarkMode(true);
-            document.documentElement.classList.add("dark");
-        }
-    }, []);
 
-    useEffect(() => {
-        if (darkMode) {
-            document.documentElement.classList.add("dark");
-            localStorage.setItem("theme", "dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-            localStorage.setItem("theme", "light");
-        }
-    }, [darkMode]);
+
     const handleChange = (e) => {
         setFormData((prev) => ({
             ...prev,
@@ -34,74 +28,77 @@ export default function LoginPage() {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+
+        const errors = {};
+        formFields.forEach(({ name, required }) => {
+            if (required && !formData[name].trim()) {
+                errors[name] = `${name.charAt(0).toUpperCase() + name.slice(1)} is required`;
+            }
+        });
+
+        setFormErrors(errors);
+
+        if (Object.keys(errors).length > 0) return;
+
         setLoading(true);
-        setErrorMsg("");
 
         try {
             const data = await loginUser(formData);
             console.log("Login success:", data);
-            // Simpan token, redirect, dll
         } catch (err) {
-            setErrorMsg(err.message);
+            toast.error(err.message || "Gagal login");
         } finally {
             setLoading(false);
         }
     };
 
+    useEffect(() => {
+        if (errorFromRedirect === "not_logged_in") {
+            toast.error("Kamu belum login.");
+        }
+    }, [errorFromRedirect]);
+
     return (
-        <div className="min-h-screen bg-[url('/background.jpg')] bg-cover bg-center relative dark:bg-gray-900 transition-colors duration-500 ease-in-out">
+        <div className={`min-h-screen bg-[url('/background.jpg')] bg-cover bg-center relative transition-colors duration-500 ease-in-out ${darkMode ? "dark bg-gray-900" : ""}`}>
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-colors duration-500 ease-in-out" />
             <div className="absolute top-4 right-4 z-20">
-                <div className="absolute top-4 right-4 z-20">
-                    <button
-                        onClick={() => setDarkMode(!darkMode)}
-                        className="p-2 bg-white dark:bg-gray-800 text-black dark:text-white rounded-full shadow relative w-10 h-10 flex items-center justify-center overflow-hidden"
+                <button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="p-2 bg-white dark:bg-gray-800 text-black dark:text-white rounded-full shadow relative w-10 h-10 flex items-center justify-center overflow-hidden"
+                >
+                    <span
+                        className={`absolute transition-all duration-500 ease-in-out transform ${darkMode ? "opacity-0 scale-75 rotate-[-90deg]" : "opacity-100 scale-100 rotate-0"
+                            }`}
                     >
-                        <span
-                            className={`absolute transition-all duration-500 ease-in-out transform ${darkMode
-                                ? "opacity-0 scale-75 rotate-[-90deg]"
-                                : "opacity-100 scale-100 rotate-0"
-                                }`}
-                        >
-                            🌙
-                        </span>
-                        <span
-                            className={`absolute transition-all duration-500 ease-in-out transform ${darkMode
-                                ? "opacity-100 scale-100 rotate-0"
-                                : "opacity-0 scale-75 rotate-[90deg]"
-                                }`}
-                        >
-                            🌞
-                        </span>
-                    </button>
-                </div>            </div>
+                        🌙
+                    </span>
+                    <span
+                        className={`absolute transition-all duration-500 ease-in-out transform ${darkMode ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-75 rotate-[90deg]"
+                            }`}
+                    >
+                        🌞
+                    </span>
+                </button>
+            </div>
 
             <div className="relative z-10 flex items-center justify-center min-h-screen">
                 <div className="bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-gray-100 rounded-2xl shadow-xl p-8 w-full max-w-md transition-colors duration-500 ease-in-out">
                     <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-
-                    {errorMsg && (
-                        <div className="mb-4 text-sm text-red-500 text-center">{errorMsg}</div>
-                    )}
-
                     <form className="space-y-4" onSubmit={handleLogin}>
-                        <InputField
-                            id="username"
-                            name="username"
-                            label="Username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            placeholder="Enter your username"
-                        />
-                        <InputField
-                            id="password"
-                            name="password"
-                            label="Password"
-                            type="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder="Enter your password"
-                        />
+                        {formFields.map(({ name, label, required }) => (
+                            <InputField
+                                key={name}
+                                id={name}
+                                name={name}
+                                label={label}
+                                value={formData[name]}
+                                onChange={handleChange}
+                                placeholder={`Enter your ${label.toLowerCase()}`}
+                                error={formErrors[name]}
+                                required={required}
+                                type={name === "password" ? "password" : "text"}
+                            />
+                        ))}
                         <button
                             type="submit"
                             disabled={loading}
