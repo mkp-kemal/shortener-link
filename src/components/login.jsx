@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { loginUser } from "../api/authSlice";
 import { useTheme } from "../utils/theme";
 import InputField from "./common/InputField";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { isTokenValid } from "../middleware/ProtectedRoute";
 
 export default function LoginPage() {
     const [darkMode, setDarkMode] = useTheme();
@@ -11,11 +12,13 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [formErrors, setFormErrors] = useState({});
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const errorFromRedirect = searchParams.get("error");
     const formFields = [
         { name: "username", label: "Username", required: true },
         { name: "password", label: "Password", required: true },
     ];
+    const isLocalhost = window.location.hostname === 'localhost';
 
 
 
@@ -44,19 +47,34 @@ export default function LoginPage() {
 
         try {
             const data = await loginUser(formData);
-            console.log("Login success:", data);
+
+            if (data?.access_token) {
+                localStorage.setItem('access_token', data.access_token);
+                navigate("/");
+            } else {
+                toast.error("Token tidak ditemukan dalam respons.");
+            }
         } catch (err) {
             toast.error(err.message || "Gagal login");
         } finally {
             setLoading(false);
         }
+
     };
 
     useEffect(() => {
-        if (errorFromRedirect === "not_logged_in") {
+        const token = localStorage.getItem("access_token");
+        const validToken = isTokenValid(token);
+        console.log(validToken);
+
+        if (validToken) {
+            navigate("/");
+        } else {
+            localStorage.removeItem("access_token");
             toast.error("Kamu belum login.");
         }
-    }, [errorFromRedirect]);
+
+    }, [errorFromRedirect, navigate]);
 
     return (
         <div className={`min-h-screen bg-[url('/bg.jpg')] bg-cover bg-center relative transition-colors duration-500 ease-in-out ${darkMode ? "dark bg-gray-900" : ""}`}>
@@ -107,6 +125,12 @@ export default function LoginPage() {
                             {loading ? "Logging in..." : "Login"}
                         </button>
                     </form>
+                    {isLocalhost && (
+                        <div  className="dark:text-white text-gray-400">
+                            <p>Username: <code>sabit</code></p>
+                            <p>Password: <code>Sabit123!</code></p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

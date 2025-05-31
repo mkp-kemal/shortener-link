@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./components/login";
-import ProtectedRoute from "./middleware/ProtectedRoute";
-import HomePage from "./components/home";
+import HomePage from "./components/dashboard/home";
 import { Toaster } from "react-hot-toast";
+import { ProtectedRoute } from "./middleware/ProtectedRoute";
 
 export default function App() {
   return (
