@@ -1,86 +1,172 @@
-import { useEffect } from "react";
-import useLinkStore from "../../stores/linkStore";
+import { useState } from "react";
+import { createLink } from "../../api/linkSlice";
+import { FiCopy, FiTrash2, FiExternalLink, FiClock, FiLink2 } from "react-icons/fi";
+import toast from "react-hot-toast";
+import { copyToClipboard } from "../../utils/links.utils";
+import LinksTable from "./linksTable";
+import InputField from "../common/InputField";
 
 export default function Content() {
-    const { links, fetchLinks } = useLinkStore();
+    const [shortenedResult, setShortenedResult] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({ destination: "", route: "", expiredAt: "" });
+    const [formErrors, setFormErrors] = useState({});
+    const formFields = [
+        { name: "destination", label: "Destination URL", required: true },
+        { name: "route", label: "Custom Url", required: true },
+        { name: "expiredAt", label: "Expiration Date", required: true },
+    ];
 
-    useEffect(() => {
-        fetchLinks();
-    }, [fetchLinks]);
+    const handleShorten = async (e) => {
+        e.preventDefault();
+        const errors = {};
+
+        formFields.forEach(({ name, required }) => {
+            if (required && !formData[name].trim()) {
+                errors[name] = `${name.charAt(0).toUpperCase() + name.slice(1)} is required`;
+            }
+        });
+
+        setFormErrors(errors);
+
+        setLoading(true);
+
+        if (Object.keys(errors).length > 0) return;
+
+        try {
+            const response = await createLink(formData);
+            const result = await response.json();
+
+            setShortenedResult(result);
+
+            toast.success('Link shortened successfully!');
+        } catch (err) {
+            toast.error(`Failed to shorten link ${err}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleChange = (e) => {
+        setFormData((prev) => ({
+            ...prev,
+            [e.target.name]: e.target.value,
+        }));
+    };
+
     return (
-        <div className="max-w-full mx-auto p-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex flex-col md:flex-row gap-6">
+        <div className="max-w-7xl mx-auto p-4 sm:p-6">
+            <div className="bg-white dark:bg-gray-800 transition-colors duration-500 ease-in-out rounded-xl shadow-sm p-6">
+                <div className="flex flex-col lg:flex-row gap-8">
                     <div className="flex-1">
-                        <h2 className="text-lg font-semibold text-gray-700 mb-3">Shorten Your Link</h2>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                placeholder="Enter your long URL here..."
-                                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200 whitespace-nowrap">
-                                Shorten URL
-                            </button>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-2">Example: https://www.example.com/very-long-url</p>
-                    </div>
-                    <div className="flex-1">
-                        <h2 className="text-lg font-semibold text-gray-700 mb-3">Your Short Link</h2>
-                        <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium">Original URL:</span>
-                                <span className="text-blue-600 text-sm truncate max-w-xs">https://www.example.com/very-long-url</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="font-medium">Short URL:</span>
-                                <div className="flex items-center gap-2">
-                                    <a href="#" className="text-blue-600 hover:underline">shrt.ly/abc123</a>
-                                    <button className="text-gray-500 hover:text-gray-700">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                                            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition duration-200">
-                                Copy Short Link
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Table Section */}
-                <div className="mt-10">
-                    <h2 className="text-lg font-semibold text-gray-700 mb-4">Link History</h2>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden">
-                            <thead className="bg-gray-100">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Original URL</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Short URL</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Created At</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 bg-white">
-                                {links.map((link, index) => (
-                                    <tr key={index}>
-                                        <td className="px-6 py-4 text-sm text-gray-800 truncate max-w-xs">{link.originalUrl}</td>
-                                        <td className="px-6 py-4 text-sm text-blue-600">{link.shortUrl}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{link.createdAt}</td>
-                                        <td className="px-6 py-4">
-                                            <button className="text-sm text-green-600 hover:underline mr-4">Copy</button>
-                                            <button className="text-sm text-red-600 hover:underline">Delete</button>
-                                        </td>
-                                    </tr>
+                        <div className="bg-blue-50 dark:bg-gray-800 transition-colors duration-500 ease-in-out shadow-2xl p-5 rounded-lg">
+                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+                                <FiLink2 className="text-blue-600" /> Shorten Your Link
+                            </h2>
+                            <form className="space-y-4 dark:text-white transition-colors duration-500 ease-in-out" onSubmit={handleShorten}>
+                                {formFields.map(({ name, label, required }) => (
+                                    <InputField
+                                        key={name}
+                                        id={name}
+                                        name={name}
+                                        label={label}
+                                        value={formData[name]}
+                                        onChange={handleChange}
+                                        placeholder={`Enter your ${label.toLowerCase()}`}
+                                        error={formErrors[name]}
+                                        required={required}
+                                        type={name === "expiredAt" ? "datetime-local" : "text"}
+                                    />
                                 ))}
-                            </tbody>
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-50"
+                                >
+                                    {loading ?
+                                        <>
+                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Processing...
+                                        </> : "Shorten URL"}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
 
-                        </table>
+                    <div className="flex-1">
+                        <div className="bg-gray-50 dark:bg-gray-800 transition-colors duration-500 ease-in-out shadow-2xl p-5 rounded-lg">
+                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Your Short Link</h2>
+                            {shortenedResult ? (
+                                <div className="space-y-4">
+                                    <div className="bg-white dark:bg-gray-800 transition-colors duration-500 ease-in-out shadow-2xl p-4 rounded-md">
+                                        <div className="flex flex-col space-y-2 mb-3">
+                                            <span className="text-xs font-medium text-gray-500">Original URL:</span>
+                                            <a
+                                                href={shortenedResult.destination}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:underline text-sm truncate"
+                                            >
+                                                {shortenedResult.destination}
+                                            </a>
+                                        </div>
+                                        <div className="flex flex-col space-y-2">
+                                            <span className="text-xs font-medium text-gray-500">Short URL:</span>
+                                            <div className="flex items-center justify-between dark:bg-gray-800 transition-colors duration-500 ease-in-out shadow-2xl bg-gray-50 p-2 rounded">
+                                                <a
+                                                    href={`https://shrt.ly/${shortenedResult.route}`}
+                                                    className="text-blue-600 hover:underline text-sm font-medium"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    shrt.ly/{shortenedResult.route}
+                                                </a>
+                                                <div className="flex space-x-2">
+                                                    <button
+                                                        onClick={() => copyToClipboard(`https://shrt.ly/${shortenedResult.route}`)}
+                                                        className="text-gray-500 hover:text-blue-600 p-1 rounded hover:bg-gray-100"
+                                                        title="Copy"
+                                                    >
+                                                        <FiCopy size={18} />
+                                                    </button>
+                                                    <a
+                                                        href={`https://shrt.ly/${shortenedResult.route}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-gray-500 hover:text-blue-600 p-1 rounded hover:bg-gray-100"
+                                                        title="Open"
+                                                    >
+                                                        <FiExternalLink size={18} />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => copyToClipboard(`https://shrt.ly/${shortenedResult.route}`)}
+                                        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-green-100 hover:bg-green-200 text-green-800 rounded-lg font-medium transition-colors"
+                                    >
+                                        <FiCopy /> Copy Short Link
+                                    </button>
+
+                                    <div className="text-xs text-gray-500 mt-2">
+                                        <p>Link will expire on: {new Date(shortenedResult.expired_at).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-white dark:bg-gray-800 transition-colors duration-500 ease-in-out shadow-2xl p-8 text-center rounded-md border-2 border-dashed border-gray-200 dark:border-gray-600">
+                                    <p className="text-gray-400">Your shortened link will appear here</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
+
+                <LinksTable />
             </div>
         </div>
     );

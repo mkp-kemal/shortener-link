@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { loginUser } from "../api/authSlice";
-import { useTheme } from "../utils/theme";
+import { useTheme } from "../utils/theme.utils";
 import InputField from "./common/InputField";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -65,7 +65,6 @@ export default function LoginPage() {
     useEffect(() => {
         const token = localStorage.getItem("access_token");
         const validToken = isTokenValid(token);
-        console.log(validToken);
 
         if (validToken) {
             navigate("/");
@@ -82,7 +81,7 @@ export default function LoginPage() {
             <div className="absolute top-4 right-4 z-20">
                 <button
                     onClick={() => setDarkMode(!darkMode)}
-                    className="p-2 bg-white dark:bg-gray-800 text-black dark:text-white rounded-full shadow relative w-10 h-10 flex items-center justify-center overflow-hidden"
+                    className="p-2 bg-white dark:bg-gray-800 text-black dark:text-white rounded-full shadow relative w-10 h-10 flex items-center justify-center cursor-pointer"
                 >
                     <span
                         className={`absolute transition-all duration-500 ease-in-out transform ${darkMode ? "opacity-0 scale-75 rotate-[-90deg]" : "opacity-100 scale-100 rotate-0"
