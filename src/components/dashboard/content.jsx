@@ -19,8 +19,8 @@ export default function Content() {
 
     const handleShorten = async (e) => {
         e.preventDefault();
-        const errors = {};
 
+        const errors = {};
         formFields.forEach(({ name, required }) => {
             if (required && !formData[name].trim()) {
                 errors[name] = `${name.charAt(0).toUpperCase() + name.slice(1)} is required`;
@@ -28,24 +28,27 @@ export default function Content() {
         });
 
         setFormErrors(errors);
+        if (Object.keys(errors).length > 0) return;
 
         setLoading(true);
 
-        if (Object.keys(errors).length > 0) return;
-
         try {
-            const response = await createLink(formData);
+            const payload = {
+                ...formData,
+                expired_at: formData.expiredAt ? new Date(formData.expiredAt).getTime() : null,
+            };
+
+            const response = await createLink(payload);
             const result = await response.json();
-
             setShortenedResult(result);
-
-            toast.success('Link shortened successfully!');
+            toast.success("Link shortened successfully!");
         } catch (err) {
-            toast.error(`Failed to shorten link ${err}`);
+            toast.error(`Failed to shorten link: ${err}`);
         } finally {
             setLoading(false);
         }
     };
+
 
     const handleChange = (e) => {
         setFormData((prev) => ({

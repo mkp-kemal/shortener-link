@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import useLinkStore from "../../stores/linkStore";
 import { copyToClipboard } from "../../utils/links.utils";
+import { FiCopy, FiTrash2} from "react-icons/fi";
+
 
 export default function LinksTable() {
     const { links, fetchLinks } = useLinkStore();
@@ -39,22 +41,22 @@ export default function LinksTable() {
                                 {links.map((link, index) => (
                                     <tr key={index} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900 max-w-xs truncate" title={link.originalUrl}>
-                                                {link.originalUrl}
+                                            <div className="text-sm text-gray-900 max-w-xs truncate" title={link.destination}>
+                                                {link.destination}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <a
-                                                    href={link.shortUrl}
+                                                    href={link.route}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-sm text-blue-600 hover:underline"
                                                 >
-                                                    {link.shortUrl.replace('https://', '')}
+                                                    {link.route}
                                                 </a>
                                                 <button
-                                                    onClick={() => copyToClipboard(link.shortUrl)}
+                                                    onClick={() => copyToClipboard(link.route)}
                                                     className="ml-2 text-gray-400 hover:text-blue-600"
                                                     title="Copy"
                                                 >
@@ -63,7 +65,7 @@ export default function LinksTable() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {new Date(link.createdAt).toLocaleString()}
+                                            {new Date(link.created_at).toLocaleString()}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <button className="text-red-600 hover:text-red-900 flex items-center gap-1">
