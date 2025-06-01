@@ -34,7 +34,7 @@ export default function LinksTable() {
     return (
         <div className="mt-10">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-800">Link History</h2>
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 transition-colors duration-500 ease-in-out">Link History</h2>
                 <button
                     onClick={fetchLinks}
                     className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
@@ -47,29 +47,29 @@ export default function LinksTable() {
             </div>
 
             {links.length > 0 ? (
-                <div className="overflow-hidden border border-gray-200 rounded-lg">
+                <div className="overflow-hidden shadow-2xl rounded-lg">
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full">
+                            <thead className="bg-blue-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors duration-500 ease-in-out">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Original URL</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Short URL</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expired At</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Original URL</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Short URL</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Created At</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Expired At</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 transition-colors duration-500 ease-in-out">
                                 {links.map((link, index) => {
                                     const isExpired = link.expired_at && new Date(link.expired_at) < new Date();
 
                                     return (
 
-                                        <tr key={index} className={`hover:bg-gray-50 transition-opacity duration-300 ${deletedIds.includes(link.id) ? 'opacity-0' : 'opacity-100'
+                                        <tr key={index} className={`hover:bg-gray-200 dark:hover:bg-gray-700 transition-opacity duration-300 ${deletedIds.includes(link.id) ? 'opacity-0' : 'opacity-100'
                                             }`}
                                         >
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900 max-w-xs truncate" title={link.destination}>
+                                                <div className="text-sm text-gray-500 max-w-xs truncate" title={link.destination}>
                                                     {link.destination}
                                                 </div>
                                             </td>
@@ -124,7 +124,7 @@ export default function LinksTable() {
                     </div>
                 </div>
             ) : (
-                <div className="bg-white p-8 text-center rounded-md border-2 border-dashed border-gray-200">
+                <div className="bg-white dark:bg-gray-800 p-8 text-center rounded-md border-2 border-dashed border-gray-200 dark:border-gray-600">
                     <p className="text-gray-400">No links have been created yet</p>
                 </div>
             )}

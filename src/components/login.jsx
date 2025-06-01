@@ -33,7 +33,7 @@ export default function LoginPage() {
         e.preventDefault();
 
         const errors = {};
-        
+
         formFields.forEach(({ name, required }) => {
             if (required && !formData[name].trim()) {
                 errors[name] = `${name.charAt(0).toUpperCase() + name.slice(1)} is required`;
@@ -51,7 +51,7 @@ export default function LoginPage() {
 
             if (data?.access_token) {
                 localStorage.setItem('access_token', data.access_token);
-                navigate("/");
+                window.location.href = "/";
             } else {
                 toast.error("Token tidak ditemukan dalam respons.");
             }
@@ -68,7 +68,7 @@ export default function LoginPage() {
         const validToken = isTokenValid(token);
 
         if (validToken) {
-            navigate("/");
+            window.location.href = "/";
         } else {
             localStorage.removeItem("access_token");
             toast.error("Kamu belum login.");
@@ -126,7 +126,7 @@ export default function LoginPage() {
                         </button>
                     </form>
                     {isLocalhost && (
-                        <div  className="dark:text-white text-gray-400">
+                        <div className="dark:text-white text-gray-400">
                             <p>Username: <code>sabit</code></p>
                             <p>Password: <code>Sabit123!</code></p>
                         </div>
