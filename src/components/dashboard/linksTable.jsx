@@ -84,7 +84,7 @@ export default function LinksTable() {
                                                         {link.route}
                                                     </a>
                                                     <button
-                                                        onClick={() => copyToClipboard(link.route)}
+                                                        onClick={() => copyToClipboard(`https://${urlBase}/${link.route}`)}
                                                         className="ml-2 text-gray-400 hover:text-blue-600"
                                                         title="Copy"
                                                     >
@@ -93,10 +93,25 @@ export default function LinksTable() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {new Date(link.created_at).toLocaleString()}
+                                                {new Date(
+                                                    new Date(link.created_at).getTime() + 8 * 60 * 60 * 1000
+                                                ).toLocaleString("id-ID", {
+                                                    year: "numeric",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                })}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {new Date(link.expired_at).toLocaleString()}
+                                                {new Date(link.expired_at).toLocaleString("id-ID", {
+                                                    timeZone: "Asia/Jakarta",
+                                                    year: "numeric",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                })}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative">
                                                 <button
