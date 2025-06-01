@@ -45,3 +45,27 @@ export async function createLink(link) {
     }
 }
 
+export async function deleteLink(id) {
+    const { apiBase, access_token } = runtimeConfig;
+
+    try {
+        const response = await fetch(`${apiBase}/links/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${access_token}`,
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Request failed with status ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error deleting link:", error);
+        throw error;
+    }
+}
+

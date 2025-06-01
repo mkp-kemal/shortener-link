@@ -33,6 +33,7 @@ export default function LoginPage() {
         e.preventDefault();
 
         const errors = {};
+        
         formFields.forEach(({ name, required }) => {
             if (required && !formData[name].trim()) {
                 errors[name] = `${name.charAt(0).toUpperCase() + name.slice(1)} is required`;

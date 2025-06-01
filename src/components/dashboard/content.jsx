@@ -5,12 +5,16 @@ import toast from "react-hot-toast";
 import { copyToClipboard } from "../../utils/links.utils";
 import LinksTable from "./linksTable";
 import InputField from "../common/InputField";
+import useLinkStore from "../../stores/linkStore";
+import { runtimeConfig } from "../../config/runtime";
 
 export default function Content() {
+    const { fetchLinks } = useLinkStore();
     const [shortenedResult, setShortenedResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ destination: "", route: "", expiredAt: "" });
     const [formErrors, setFormErrors] = useState({});
+    const { urlBase } = runtimeConfig;
     const formFields = [
         { name: "destination", label: "Destination URL", required: true },
         { name: "route", label: "Custom Url", required: true },
@@ -38,9 +42,9 @@ export default function Content() {
                 expired_at: formData.expiredAt ? new Date(formData.expiredAt).getTime() : null,
             };
 
-            const response = await createLink(payload);
-            const result = await response.json();
+            const result = await createLink(payload);
             setShortenedResult(result);
+            fetchLinks();
             toast.success("Link shortened successfully!");
         } catch (err) {
             toast.error(`Failed to shorten link: ${err}`);
@@ -120,23 +124,23 @@ export default function Content() {
                                             <span className="text-xs font-medium text-gray-500">Short URL:</span>
                                             <div className="flex items-center justify-between dark:bg-gray-800 transition-colors duration-500 ease-in-out shadow-2xl bg-gray-50 p-2 rounded">
                                                 <a
-                                                    href={`https://shrt.ly/${shortenedResult.route}`}
+                                                    href={`https://${urlBase}/${shortenedResult.route}`}
                                                     className="text-blue-600 hover:underline text-sm font-medium"
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                 >
-                                                    shrt.ly/{shortenedResult.route}
+                                                    {urlBase}/{shortenedResult.route}
                                                 </a>
                                                 <div className="flex space-x-2">
                                                     <button
-                                                        onClick={() => copyToClipboard(`https://shrt.ly/${shortenedResult.route}`)}
+                                                        onClick={() => copyToClipboard(`https://${urlBase}/${shortenedResult.route}`)}
                                                         className="text-gray-500 hover:text-blue-600 p-1 rounded hover:bg-gray-100"
                                                         title="Copy"
                                                     >
                                                         <FiCopy size={18} />
                                                     </button>
                                                     <a
-                                                        href={`https://shrt.ly/${shortenedResult.route}`}
+                                                        href={`https://${urlBase}/${shortenedResult.route}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="text-gray-500 hover:text-blue-600 p-1 rounded hover:bg-gray-100"
@@ -150,7 +154,7 @@ export default function Content() {
                                     </div>
 
                                     <button
-                                        onClick={() => copyToClipboard(`https://shrt.ly/${shortenedResult.route}`)}
+                                        onClick={() => copyToClipboard(`https://${urlBase}/${shortenedResult.route}`)}
                                         className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-green-100 hover:bg-green-200 text-green-800 rounded-lg font-medium transition-colors"
                                     >
                                         <FiCopy /> Copy Short Link
